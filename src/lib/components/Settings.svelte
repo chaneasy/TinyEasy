@@ -29,17 +29,17 @@
 
 <div class="flex flex-col gap-4">
 	<div class="space-y-2">
-		<div class="text-sm font-medium">压缩档位</div>
+		<div class="text-sm font-medium">Compression Level</div>
 		<div class="flex flex-col gap-2">
 			<div class="flex items-center justify-between gap-3">
 				<Radio name="level" value="low" bind:group={appState.settings.level}
-					>低</Radio
+					>Low</Radio
 				>
 				<div class="flex items-center">
 					<button
 						type="button"
 						class="inline-flex items-center justify-center rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:hover:bg-gray-800 dark:hover:text-gray-200"
-						aria-label="查看低档位的具体配置"
+						aria-label="View configuration for Low level"
 					>
 						<InfoCircleOutline class="h-4 w-4" />
 					</button>
@@ -64,13 +64,13 @@
 			</div>
 			<div class="flex items-center justify-between gap-3">
 				<Radio name="level" value="medium" bind:group={appState.settings.level}
-					>中</Radio
+					>Medium</Radio
 				>
 				<div class="flex items-center">
 					<button
 						type="button"
 						class="inline-flex items-center justify-center rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:hover:bg-gray-800 dark:hover:text-gray-200"
-						aria-label="查看中档位的具体配置"
+						aria-label="View configuration for Medium level"
 					>
 						<InfoCircleOutline class="h-4 w-4" />
 					</button>

@@ -174,21 +174,21 @@ ipcMain.handle("select-files", async () => {
 ipcMain.handle("compress-image", async (event, { filePath, options }) => {
 	try {
 		if (!filePath || typeof filePath !== "string") {
-			return { success: false, error: "filePath 为空或非法" };
+			return { success: false, error: "filePath is empty or invalid" };
 		}
 
 		const ext = path.extname(filePath).toLowerCase();
 		if (ext !== ".png" && ext !== ".jpg" && ext !== ".jpeg") {
 			return {
 				success: false,
-				error: "仅支持 PNG/JPG（PNG 用 oxipng，JPG 用 jpegoptim）",
+				error: "Only PNG/JPG supported (PNG uses oxipng, JPG uses jpegoptim)",
 			};
 		}
 
 		try {
 			await fs.access(filePath);
 		} catch (e) {
-			return { success: false, error: `无法读取输入文件：${filePath}` };
+			return { success: false, error: `Cannot read input file: ${filePath}` };
 		}
 
 		const outputDir = path.join(app.getPath("downloads"), "EasyPNG");
@@ -212,7 +212,7 @@ ipcMain.handle(
 	async (event, { fileName, buffer, options }) => {
 		try {
 			if (!buffer) {
-				return { success: false, error: "buffer 为空" };
+				return { success: false, error: "buffer is empty" };
 			}
 
 			const outputDir = path.join(app.getPath("downloads"), "EasyPNG");
@@ -253,7 +253,7 @@ ipcMain.handle(
 			if (!pngMagicOk && !jpegMagicOk) {
 				return {
 					success: false,
-					error: "仅支持 PNG/JPG（PNG 用 oxipng，JPG 用 jpegoptim）",
+					error: "Only PNG/JPG supported (PNG uses oxipng, JPG uses jpegoptim)",
 				};
 			}
 

@@ -146,7 +146,7 @@ class AppState {
     // For simplicity, let's do sequential or limited parallel (e.g. 2).
     // Sequential for now to be safe and simple.
     
-		const toastId = toast.loading("正在压缩…");
+		const toastId = toast.loading("Compressing...");
 		let okCount = 0;
 		let errCount = 0;
 
@@ -205,11 +205,11 @@ class AppState {
     this.processing = false;
 		toast.dismiss(toastId);
 		if (okCount > 0 && errCount === 0) {
-			toast.success(`压缩完成：${okCount} 个成功`);
+			toast.success(`Compression completed: ${okCount} successful`);
 		} else if (okCount > 0 && errCount > 0) {
-			toast(`压缩完成：${okCount} 成功，${errCount} 失败`, { duration: 5000 });
+			toast(`Compression completed: ${okCount} successful, ${errCount} failed`, { duration: 5000 });
 		} else {
-			toast.error("没有可压缩的文件，或全部失败");
+			toast.error("No files to compress or all failed");
 		}
   }
   

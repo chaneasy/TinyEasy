@@ -31,7 +31,7 @@
 			};
 		}
 
-		// 说明：去掉手动切换按钮与本地存储，默认跟随系统暗黑/浅色模式，并监听系统模式变化。
+		// Note: Remove manual toggle button and local storage, default to follow system dark/light mode, and listen for system mode changes.
 		const media = window.matchMedia?.("(prefers-color-scheme: dark)");
 		if (!media) return;
 
@@ -114,15 +114,15 @@
 			<div
 				class="flex h-full min-h-0 flex-col gap-4 lg:flex-row lg:justify-between"
 			>
-				<!-- 说明：左右两侧固定容器高度，内容在内部滚动，避免撑高外层 -->
+				<!-- Note: Fixed height for left and right containers, content scrolls internally, avoiding outer expansion -->
 				<div class="h-full min-h-0 w-full overflow-hidden lg:flex-[4_1_0%]">
 					<div class="flex h-full min-h-0 flex-col gap-4">
 						{#if totalCount === 0}
-							<!-- 说明：空状态下拖拽区域撑满左侧容器高度 -->
+							<!-- Note: In empty state, drag area fills the left container height -->
 							<div
 								class="flex h-full w-full flex-col rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900 sm:p-5"
 							>
-								<div class="text-base font-semibold">导入</div>
+								<div class="text-base font-semibold">Import</div>
 								<div class="mt-4 min-h-0 flex-1">
 									<DropZone class="h-full w-full" />
 								</div>
@@ -199,7 +199,7 @@
 										Processing...
 									{:else}
 										<PlayOutline class="me-2 h-5 w-5" />
-										开始压缩
+										Start Compression
 									{/if}
 								</Button>
 
@@ -211,7 +211,7 @@
 									onclick={() => appState.clearAll()}
 								>
 									<TrashBinOutline class="me-2 h-5 w-5" />
-									清空全部
+									Clear All
 								</Button>
 							</div>
 
