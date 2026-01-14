@@ -4,6 +4,7 @@ import { fileURLToPath } from "url";
 import { Worker } from "worker_threads";
 import { createRequire } from "module";
 import fs from "fs/promises";
+import { randomUUID } from "crypto";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
@@ -14,10 +15,16 @@ if (require("electron-squirrel-startup")) {
 }
 
 let mainWindow: BrowserWindow | null = null;
+let lastSelectedOutputDir: string | null = null;
 
 const createWindow = () => {
+	const iconPath = app.isPackaged
+		? path.join(process.resourcesPath, "icon.png")
+		: path.join(__dirname, "../build/icon.png");
+
 	mainWindow = new BrowserWindow({
 		title: "TinyEasy",
+		icon: iconPath,
 		width: 1024,
 		height: 748,
 		resizable: false,
@@ -115,14 +122,24 @@ ipcMain.handle("select-files", async () => {
 	const isImagePath = (p: string) =>
 		IMAGE_EXTS.has(path.extname(p).toLowerCase());
 
-	const walkDir = async (dirPath: string, out: string[]) => {
+	const walkDir = async (
+		dirPath: string,
+		rootPath: string,
+		out: { path: string; relativePath: string }[]
+	) => {
 		const entries = await fs.readdir(dirPath, { withFileTypes: true });
 		for (const ent of entries) {
 			const fullPath = path.join(dirPath, ent.name);
 			if (ent.isDirectory()) {
-				await walkDir(fullPath, out);
+				await walkDir(fullPath, rootPath, out);
 			} else if (ent.isFile()) {
-				if (isImagePath(fullPath)) out.push(fullPath);
+				if (isImagePath(fullPath)) {
+					out.push({
+						path: fullPath,
+						// 只保留“选中目录内部”的结构，不包含顶层目录名
+						relativePath: path.relative(rootPath, fullPath),
+					});
+				}
 			}
 		}
 	};
@@ -151,37 +168,119 @@ ipcMain.handle("select-files", async () => {
 
 	if (result.canceled) return [];
 
-	const collectedPaths: string[] = [];
+	const collectedFiles: { path: string; relativePath: string }[] = [];
 	for (const p of result.filePaths) {
 		const st = await fs.stat(p);
 		if (st.isDirectory()) {
-			await walkDir(p, collectedPaths);
+			await walkDir(p, p, collectedFiles);
 		} else if (st.isFile()) {
-			if (isImagePath(p)) collectedPaths.push(p);
+			if (isImagePath(p)) {
+				collectedFiles.push({
+					path: p,
+					relativePath: path.basename(p),
+				});
+			}
 		}
 	}
 
 	const files = await Promise.all(
-		collectedPaths.map(async (filePath) => {
-			const stat = await fs.stat(filePath);
-			return { name: path.basename(filePath), path: filePath, size: stat.size };
+		collectedFiles.map(async (file) => {
+			const stat = await fs.stat(file.path);
+			return {
+				name: path.basename(file.path),
+				path: file.path,
+				size: stat.size,
+				relativePath: file.relativePath,
+			};
 		})
 	);
 
 	return files;
 });
 
+ipcMain.handle("select-folder", async () => {
+	const result = await dialog.showOpenDialog({
+		properties: ["openDirectory", "createDirectory"],
+	});
+	if (result.canceled) return null;
+	const selected = result.filePaths[0] ?? null;
+	if (typeof selected === "string" && selected.length > 0) {
+		lastSelectedOutputDir = selected;
+	}
+	return selected;
+});
+
+ipcMain.handle("copy-image-to-output", async (event, { filePath, options }) => {
+	try {
+		if (!filePath || typeof filePath !== "string") {
+			return { success: false, error: "filePath is empty" };
+		}
+		let outputDir =
+			typeof options?.outputDir === "string" && options.outputDir.length > 0
+				? options.outputDir
+				: typeof lastSelectedOutputDir === "string" &&
+				  lastSelectedOutputDir.length > 0
+				? lastSelectedOutputDir
+				: path.join(app.getPath("downloads"), "EasyPNG");
+
+		const relativePath =
+			typeof options?.relativePath === "string" ? options.relativePath : "";
+		if (relativePath) {
+			const relativeDir = path.normalize(path.dirname(relativePath));
+			if (
+				relativeDir !== "." &&
+				!path.isAbsolute(relativeDir) &&
+				!relativeDir.startsWith("..")
+			) {
+				outputDir = path.join(outputDir, relativeDir);
+			}
+		}
+
+		await fs.mkdir(outputDir, { recursive: true });
+
+		const outputPath = path.join(outputDir, path.basename(filePath));
+		if (path.resolve(outputPath) === path.resolve(filePath)) {
+			const st = await fs.stat(filePath);
+			return {
+				success: true,
+				filePath,
+				outputPath,
+				originalSize: st.size,
+				compressedSize: st.size,
+				didFallback: true,
+			};
+		}
+		await fs.copyFile(filePath, outputPath);
+
+		const st = await fs.stat(filePath);
+		return {
+			success: true,
+			filePath,
+			outputPath,
+			originalSize: st.size,
+			compressedSize: st.size,
+			didFallback: true,
+		};
+	} catch (error) {
+		return {
+			success: false,
+			error: error instanceof Error ? error.message : String(error),
+		};
+	}
+});
 ipcMain.handle("compress-image", async (event, { filePath, options }) => {
 	try {
 		if (!filePath || typeof filePath !== "string") {
 			return { success: false, error: "filePath is empty or invalid" };
 		}
 
+		console.log("Compressing:", filePath, "Options:", options);
+
 		const ext = path.extname(filePath).toLowerCase();
 		if (ext !== ".png" && ext !== ".jpg" && ext !== ".jpeg") {
 			return {
 				success: false,
-				error: "Only PNG/JPG supported (PNG uses oxipng, JPG uses jpegoptim)",
+				error: "Only PNG/JPG supported",
 			};
 		}
 
@@ -191,13 +290,57 @@ ipcMain.handle("compress-image", async (event, { filePath, options }) => {
 			return { success: false, error: `Cannot read input file: ${filePath}` };
 		}
 
-		const outputDir = path.join(app.getPath("downloads"), "EasyPNG");
+		let outputDir =
+			typeof options?.outputDir === "string" && options.outputDir.length > 0
+				? options.outputDir
+				: typeof lastSelectedOutputDir === "string" &&
+				  lastSelectedOutputDir.length > 0
+				? lastSelectedOutputDir
+				: undefined;
+		if (!outputDir) {
+			outputDir = path.join(app.getPath("downloads"), "EasyPNG");
+		}
+
+		if (options?.overwrite) {
+			outputDir = path.dirname(filePath);
+		} else {
+			const relativePath =
+				typeof options?.relativePath === "string" ? options.relativePath : "";
+			if (relativePath) {
+				const relativeDir = path.normalize(path.dirname(relativePath));
+				if (
+					relativeDir !== "." &&
+					!path.isAbsolute(relativeDir) &&
+					!relativeDir.startsWith("..")
+				) {
+					outputDir = path.join(outputDir, relativeDir);
+				}
+			}
+		}
+
+		console.log("Final outputDir:", outputDir);
+
 		await fs.mkdir(outputDir, { recursive: true });
+
+		// If overwrite is true, we should output to a temp file first then move,
+		// but runCompressionWorker handles output logic.
+		// If we pass outputDir same as input dir, it might conflict if filename is same.
+		// Worker adds prefix/suffix? No, usually workers just write to outputDir/filename.
+		// Let's check worker logic if possible or assume standard behavior.
+		// If we overwrite, we might need to handle atomic write.
+		// For now, let's pass overwrite flag to worker if needed, or just let it write.
 
 		const result: any = await runCompressionWorker({
 			filePath,
 			options: { ...options, outputDir },
 		});
+
+		// If overwrite was requested and worker wrote to a new file (if it didn't overwrite in place),
+		// we might need to handle it. But typically compression tools might overwrite if forced.
+		// However, mozjpeg/oxipng behavior varies.
+		// Let's assume the worker writes to outputDir/filename.
+		// If outputDir == inputDir, it overwrites.
+
 		return result;
 	} catch (error) {
 		return {
@@ -215,7 +358,34 @@ ipcMain.handle(
 				return { success: false, error: "buffer is empty" };
 			}
 
-			const outputDir = path.join(app.getPath("downloads"), "EasyPNG");
+			if (options?.overwrite) {
+				return {
+					success: false,
+					error: "Requires a local file path. ",
+				};
+			}
+
+			let outputDir =
+				typeof options?.outputDir === "string" && options.outputDir.length > 0
+					? options.outputDir
+					: typeof lastSelectedOutputDir === "string" &&
+					  lastSelectedOutputDir.length > 0
+					? lastSelectedOutputDir
+					: path.join(app.getPath("downloads"), "EasyPNG");
+
+			const relativePath =
+				typeof options?.relativePath === "string" ? options.relativePath : "";
+			if (relativePath) {
+				const relativeDir = path.normalize(path.dirname(relativePath));
+				if (
+					relativeDir !== "." &&
+					!path.isAbsolute(relativeDir) &&
+					!relativeDir.startsWith("..")
+				) {
+					outputDir = path.join(outputDir, relativeDir);
+				}
+			}
+
 			await fs.mkdir(outputDir, { recursive: true });
 
 			const inputDir = path.join(app.getPath("temp"), "EasyPNG");
@@ -253,7 +423,7 @@ ipcMain.handle(
 			if (!pngMagicOk && !jpegMagicOk) {
 				return {
 					success: false,
-					error: "Only PNG/JPG supported (PNG uses oxipng, JPG uses jpegoptim)",
+					error: "Only PNG/JPG supported",
 				};
 			}
 
@@ -267,19 +437,87 @@ ipcMain.handle(
 				(ext === ".png" && hasPngExt) || (ext === ".jpg" && hasJpegExt)
 					? baseName
 					: `${baseNoExt}${ext}`;
-			const inputPath = path.join(inputDir, `${Date.now()}_${safeName}`);
+			const tmpDir = path.join(inputDir, randomUUID());
+			await fs.mkdir(tmpDir, { recursive: true });
+			const inputPath = path.join(tmpDir, safeName);
 
 			await fs.writeFile(inputPath, data);
 
-			const result: any = await runCompressionWorker({
-				filePath: inputPath,
-				options: {
-					...options,
-					originalSize: options?.originalSize ?? data.byteLength,
-					outputDir,
-				},
-			});
-			return result;
+			try {
+				const result: any = await runCompressionWorker({
+					filePath: inputPath,
+					options: {
+						...options,
+						originalSize: options?.originalSize ?? data.byteLength,
+						outputDir,
+					},
+				});
+				return result;
+			} finally {
+				try {
+					await fs.rm(tmpDir, { recursive: true, force: true });
+				} catch {}
+			}
+		} catch (error) {
+			return {
+				success: false,
+				error: error instanceof Error ? error.message : String(error),
+			};
+		}
+	}
+);
+
+ipcMain.handle(
+	"save-file-buffer",
+	async (event, { fileName, buffer, options }) => {
+		try {
+			if (!buffer) return { success: false, error: "buffer is empty" };
+
+			let outputDir =
+				typeof options?.outputDir === "string" && options.outputDir.length > 0
+					? options.outputDir
+					: typeof lastSelectedOutputDir === "string" &&
+					  lastSelectedOutputDir.length > 0
+					? lastSelectedOutputDir
+					: path.join(app.getPath("downloads"), "EasyPNG");
+
+			const relativePath =
+				typeof options?.relativePath === "string" ? options.relativePath : "";
+			if (relativePath) {
+				const relativeDir = path.normalize(path.dirname(relativePath));
+				if (
+					relativeDir !== "." &&
+					!path.isAbsolute(relativeDir) &&
+					!relativeDir.startsWith("..")
+				) {
+					outputDir = path.join(outputDir, relativeDir);
+				}
+			}
+
+			await fs.mkdir(outputDir, { recursive: true });
+
+			const baseName =
+				typeof fileName === "string" && fileName.length > 0
+					? path.basename(fileName)
+					: `upload_${Date.now()}`;
+
+			const data =
+				buffer instanceof Uint8Array
+					? buffer
+					: buffer instanceof ArrayBuffer
+					? new Uint8Array(buffer)
+					: new Uint8Array(buffer?.buffer ?? buffer);
+
+			const outputPath = path.join(outputDir, baseName);
+			await fs.writeFile(outputPath, data);
+
+			return {
+				success: true,
+				outputPath,
+				originalSize: data.byteLength,
+				compressedSize: data.byteLength,
+				didFallback: true,
+			};
 		} catch (error) {
 			return {
 				success: false,

@@ -79,6 +79,12 @@
 		return dot === -1 ? "" : name.slice(dot + 1).toUpperCase();
 	}
 
+	function fileTypeLabel(name: string) {
+		const ext = fileExt(name);
+		if (ext === "JPEG") return "JPG";
+		return ext;
+	}
+
 	function compressionPct(originalSize: number, compressedSize?: number) {
 		if (!compressedSize || originalSize <= 0) return null;
 		return (1 - compressedSize / originalSize) * 100;
@@ -129,13 +135,18 @@
 			>
 				{#each appState.files as file (file.id)}
 					<Card
-						class={`relative w-full overflow-hidden p-2 transition-colors duration-300 ${getCardBgClass(file.status)}`}
-						padding="none"
+						class={`relative w-full overflow-hidden !p-0 transition-colors duration-300 ${getCardBgClass(file.status)}`}
 						shadow="sm"
 					>
-						{#if file.status === "compressing"}
+						<div class="absolute left-1 top-[0.5] z-20">
+							<Badge class="!rounded-md" color="blue" size="small"
+								>{fileTypeLabel(file.name)}</Badge
+							>
+						</div>
+						{#if file.status === "pending" || file.status === "compressing"}
+							<!-- 单图不显示进度条，改为 loading 动效（待处理/处理中） -->
 							<div
-								class="animate-progress absolute bottom-0 left-0 right-0 z-0 bg-green-50 dark:bg-green-900/20"
+								class="absolute inset-0 z-0 animate-pulse bg-blue-50/60 dark:bg-blue-900/20"
 							></div>
 						{/if}
 						<div class="relative z-10 flex flex-col gap-2 p-2">
@@ -170,51 +181,53 @@
 								</div>
 
 								<div class="mt-1 flex shrink-0 flex-col items-center gap-1">
-									<div class="text-[10px] text-gray-500 dark:text-gray-400">
-										{formatBytes(file.originalSize, 1)}
-										{#if file.compressedSize}
-											<span class="mx-0.5">→</span>
-											{formatBytes(file.compressedSize, 1)}
-										{/if}
-									</div>
-									<Badge color={statusBadge(file.status).color as any} size="sm"
-										>{statusBadge(file.status).text}</Badge
-									>
-									{#if compressionPct(file.originalSize, file.compressedSize) !== null}
-										{#if (compressionPct(file.originalSize, file.compressedSize) as number) >= 0}
-											<div
-												class="text-xs font-semibold text-green-600 dark:text-green-400"
-											>
-												-{Math.abs(
-													compressionPct(
-														file.originalSize,
-														file.compressedSize
-													) as number
-												).toFixed(1)}%
-											</div>
-										{:else}
-											<div
-												class="text-xs font-semibold text-yellow-600 dark:text-yellow-400"
-											>
-												+{Math.abs(
-													compressionPct(
-														file.originalSize,
-														file.compressedSize
-													) as number
-												).toFixed(1)}%
-											</div>
-										{/if}
-									{/if}
-								</div>
-
-								{#if file.status === "error" && file.error}
 									<div
-										class="mt-1 w-full truncate text-[10px] text-red-500 dark:text-red-400"
-										title={file.error}
+										class="w-full text-[10px] text-gray-500 dark:text-gray-400"
 									>
-										{file.error}
+										{#if file.status === "error" && file.error}
+											<span
+												class="block max-w-full truncate text-left text-red-500 dark:text-red-400"
+												>{file.error}</span
+											>
+										{:else}
+											{formatBytes(file.originalSize, 1)}
+											{#if file.compressedSize}
+												<span class="mx-0.5">→</span>
+												{formatBytes(file.compressedSize, 1)}
+												{#if compressionPct(file.originalSize, file.compressedSize) !== null}
+													{#if (compressionPct(file.originalSize, file.compressedSize) as number) >= 0}
+														<span
+															class="ms-1 font-semibold text-green-600 dark:text-green-400"
+														>
+															-{Math.abs(
+																compressionPct(
+																	file.originalSize,
+																	file.compressedSize
+																) as number
+															).toFixed(1)}%
+														</span>
+													{:else}
+														<span
+															class="ms-1 font-semibold text-yellow-600 dark:text-yellow-400"
+														>
+															+{Math.abs(
+																compressionPct(
+																	file.originalSize,
+																	file.compressedSize
+																) as number
+															).toFixed(1)}%
+														</span>
+													{/if}
+												{/if}
+											{/if}
+										{/if}
 									</div>
-								{/if}
+									<Badge
+										class="!rounded-md"
+										color={statusBadge(file.status).color as any}
+										size="small">{statusBadge(file.status).text}</Badge
+									>
+								</div>
 							</div>
 						</div>
 					</Card>
@@ -223,17 +236,3 @@
 		{/if}
 	</div>
 </div>
-
-<style>
-	@keyframes progress-fill {
-		0% {
-			height: 0%;
-		}
-		100% {
-			height: 100%;
-		}
-	}
-	.animate-progress {
-		animation: progress-fill 2s ease-in-out infinite;
-	}
-</style>

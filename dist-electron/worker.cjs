@@ -23,7 +23,7 @@ worker_threads_1.parentPort.on("message", async (task) => {
             worker_threads_1.parentPort?.postMessage({
                 success: false,
                 filePath,
-                error: "仅支持 PNG/JPG（PNG 用 oxipng，JPG 用 jpegoptim）",
+                error: "Only PNG/JPG are supported (oxipng for PNG, mozjpeg/cjpeg for JPG)",
             });
             return;
         }
@@ -31,10 +31,11 @@ worker_threads_1.parentPort.on("message", async (task) => {
         const dir = options.outputDir && options.outputDir.length > 0
             ? options.outputDir
             : path_1.default.dirname(filePath);
-        const name = path_1.default.basename(filePath, inputExt);
-        const newFileName = `${name}_min${inputExt}`;
+        const newFileName = path_1.default.basename(filePath);
         const outputPath = path_1.default.join(dir, newFileName);
         await promises_1.default.mkdir(dir, { recursive: true });
+        const shouldOverwrite = options.overwrite === true;
+        const outputIsInput = path_1.default.resolve(outputPath) === path_1.default.resolve(filePath);
         if (inputExt === ".png") {
             const level = normalizeLevel(options.level);
             const optLevel = level === "high" ? 6 : level === "low" ? 2 : 4;
@@ -55,8 +56,13 @@ worker_threads_1.parentPort.on("message", async (task) => {
                 promises_1.default.stat(tmpPath),
             ]);
             let didFallback = false;
-            if (after.size >= before.size) {
-                await promises_1.default.copyFile(filePath, outputPath);
+            if (shouldOverwrite) {
+                await promises_1.default.copyFile(tmpPath, outputPath);
+            }
+            else if (after.size >= before.size) {
+                if (!outputIsInput) {
+                    await promises_1.default.copyFile(filePath, outputPath);
+                }
                 didFallback = true;
             }
             else {
@@ -71,7 +77,11 @@ worker_threads_1.parentPort.on("message", async (task) => {
                 filePath,
                 outputPath,
                 originalSize: options.originalSize ?? fileBuffer.length,
-                compressedSize: didFallback ? before.size : after.size,
+                compressedSize: shouldOverwrite
+                    ? after.size
+                    : didFallback
+                        ? before.size
+                        : after.size,
                 didFallback,
             });
             return;
@@ -81,49 +91,75 @@ worker_threads_1.parentPort.on("message", async (task) => {
         const stripAll = true;
         const progressive = true;
         const tmpInputPath = `${outputPath}.tmp_in${inputExt}`;
+        const tmpOutputPath = `${outputPath}.tmp_out${inputExt}`;
         try {
             await promises_1.default.unlink(tmpInputPath);
         }
         catch { }
-        await promises_1.default.copyFile(filePath, tmpInputPath);
-        const jpegoptimArgs = ["--max", String(maxQuality)];
-        if (stripAll)
-            jpegoptimArgs.push("--strip-all");
-        if (progressive)
-            jpegoptimArgs.push("--all-progressive");
-        jpegoptimArgs.push(tmpInputPath);
         try {
-            await execFileAsync("jpegoptim", jpegoptimArgs);
+            await promises_1.default.unlink(tmpOutputPath);
+        }
+        catch { }
+        await promises_1.default.copyFile(filePath, tmpInputPath);
+        try {
+            const mod = (await import("mozjpeg"));
+            const cjpegPath = typeof mod === "string"
+                ? mod
+                : typeof mod?.default === "string"
+                    ? mod.default
+                    : "";
+            if (!cjpegPath) {
+                throw new Error("mozjpeg binary path not found");
+            }
+            const args = [];
+            args.push("-quality", String(maxQuality));
+            if (stripAll)
+                args.push("-optimize");
+            if (progressive)
+                args.push("-progressive");
+            args.push("-outfile", tmpOutputPath, tmpInputPath);
+            await execFileAsync(cjpegPath, args);
         }
         catch (e) {
             try {
                 await promises_1.default.unlink(tmpInputPath);
             }
             catch { }
+            try {
+                await promises_1.default.unlink(tmpOutputPath);
+            }
+            catch { }
             const msg = e instanceof Error ? e.message : String(e);
             worker_threads_1.parentPort?.postMessage({
                 success: false,
                 filePath,
-                error: msg.includes("ENOENT")
-                    ? "未找到 jpegoptim，请先安装（macOS: brew install jpegoptim）"
-                    : msg,
+                error: `JPEG compression failed (mozjpeg/cjpeg): ${msg}`,
             });
             return;
         }
         const [before, after] = await Promise.all([
             promises_1.default.stat(filePath),
-            promises_1.default.stat(tmpInputPath),
+            promises_1.default.stat(tmpOutputPath),
         ]);
         let didFallback = false;
-        if (after.size >= before.size) {
-            await promises_1.default.copyFile(filePath, outputPath);
+        if (shouldOverwrite) {
+            await promises_1.default.copyFile(tmpOutputPath, outputPath);
+        }
+        else if (after.size >= before.size) {
+            if (!outputIsInput) {
+                await promises_1.default.copyFile(filePath, outputPath);
+            }
             didFallback = true;
         }
         else {
-            await promises_1.default.copyFile(tmpInputPath, outputPath);
+            await promises_1.default.copyFile(tmpOutputPath, outputPath);
         }
         try {
             await promises_1.default.unlink(tmpInputPath);
+        }
+        catch { }
+        try {
+            await promises_1.default.unlink(tmpOutputPath);
         }
         catch { }
         worker_threads_1.parentPort?.postMessage({
@@ -131,8 +167,13 @@ worker_threads_1.parentPort.on("message", async (task) => {
             filePath,
             outputPath,
             originalSize: options.originalSize ?? fileBuffer.length,
-            compressedSize: didFallback ? before.size : after.size,
+            compressedSize: shouldOverwrite
+                ? after.size
+                : didFallback
+                    ? before.size
+                    : after.size,
             didFallback,
+            toolUsed: "cjpeg",
         });
     }
     catch (error) {

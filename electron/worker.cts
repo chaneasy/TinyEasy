@@ -12,6 +12,7 @@ interface CompressionTask {
 		originalSize: number;
 		level?: "low" | "medium" | "high";
 		outputDir?: string;
+		overwrite?: boolean;
 	};
 }
 
@@ -27,12 +28,13 @@ parentPort.on("message", async (task: CompressionTask) => {
 	try {
 		const { filePath, options } = task;
 		const inputExt = path.extname(filePath).toLowerCase();
-		
+
 		if (inputExt !== ".png" && inputExt !== ".jpg" && inputExt !== ".jpeg") {
 			parentPort?.postMessage({
 				success: false,
 				filePath,
-				error: "Only PNG/JPG are supported (oxipng for PNG, jpegoptim for JPG)",
+				error:
+					"Only PNG/JPG are supported (oxipng for PNG, mozjpeg/cjpeg for JPG)",
 			});
 			return;
 		}
@@ -43,11 +45,12 @@ parentPort.on("message", async (task: CompressionTask) => {
 			options.outputDir && options.outputDir.length > 0
 				? options.outputDir
 				: path.dirname(filePath);
-		const name = path.basename(filePath, inputExt);
-		const newFileName = `${name}_min${inputExt}`;
+		const newFileName = path.basename(filePath);
 		const outputPath = path.join(dir, newFileName);
 
 		await fs.mkdir(dir, { recursive: true });
+		const shouldOverwrite = options.overwrite === true;
+		const outputIsInput = path.resolve(outputPath) === path.resolve(filePath);
 
 		if (inputExt === ".png") {
 			const level = normalizeLevel(options.level);
@@ -76,8 +79,12 @@ parentPort.on("message", async (task: CompressionTask) => {
 			]);
 
 			let didFallback = false;
-			if (after.size >= before.size) {
-				await fs.copyFile(filePath, outputPath);
+			if (shouldOverwrite) {
+				await fs.copyFile(tmpPath, outputPath);
+			} else if (after.size >= before.size) {
+				if (!outputIsInput) {
+					await fs.copyFile(filePath, outputPath);
+				}
 				didFallback = true;
 			} else {
 				await fs.copyFile(tmpPath, outputPath);
@@ -92,7 +99,11 @@ parentPort.on("message", async (task: CompressionTask) => {
 				filePath,
 				outputPath,
 				originalSize: options.originalSize ?? fileBuffer.length,
-				compressedSize: didFallback ? before.size : after.size,
+				compressedSize: shouldOverwrite
+					? after.size
+					: didFallback
+					? before.size
+					: after.size,
 				didFallback,
 			});
 			return;
@@ -104,49 +115,74 @@ parentPort.on("message", async (task: CompressionTask) => {
 		const progressive = true;
 
 		const tmpInputPath = `${outputPath}.tmp_in${inputExt}`;
+		const tmpOutputPath = `${outputPath}.tmp_out${inputExt}`;
 		try {
 			await fs.unlink(tmpInputPath);
+		} catch {}
+		try {
+			await fs.unlink(tmpOutputPath);
 		} catch {}
 
 		await fs.copyFile(filePath, tmpInputPath);
 
-		const jpegoptimArgs = ["--max", String(maxQuality)];
-		if (stripAll) jpegoptimArgs.push("--strip-all");
-		if (progressive) jpegoptimArgs.push("--all-progressive");
-		jpegoptimArgs.push(tmpInputPath);
-
 		try {
-			await execFileAsync("jpegoptim", jpegoptimArgs);
+			const mod = (await import("mozjpeg")) as unknown as
+				| string
+				| { default?: string };
+			const cjpegPath =
+				typeof mod === "string"
+					? mod
+					: typeof (mod as any)?.default === "string"
+					? (mod as any).default
+					: "";
+			if (!cjpegPath) {
+				throw new Error("mozjpeg binary path not found");
+			}
+
+			const args: string[] = [];
+			args.push("-quality", String(maxQuality));
+			if (stripAll) args.push("-optimize");
+			if (progressive) args.push("-progressive");
+			args.push("-outfile", tmpOutputPath, tmpInputPath);
+			await execFileAsync(cjpegPath, args);
 		} catch (e) {
 			try {
 				await fs.unlink(tmpInputPath);
+			} catch {}
+			try {
+				await fs.unlink(tmpOutputPath);
 			} catch {}
 			const msg = e instanceof Error ? e.message : String(e);
 			parentPort?.postMessage({
 				success: false,
 				filePath,
-				error: msg.includes("ENOENT")
-					? "jpegoptim not found, please install it first (macOS: brew install jpegoptim)"
-					: msg,
+				error: `JPEG compression failed (mozjpeg/cjpeg): ${msg}`,
 			});
 			return;
 		}
 
 		const [before, after] = await Promise.all([
 			fs.stat(filePath),
-			fs.stat(tmpInputPath),
+			fs.stat(tmpOutputPath),
 		]);
 
 		let didFallback = false;
-		if (after.size >= before.size) {
-			await fs.copyFile(filePath, outputPath);
+		if (shouldOverwrite) {
+			await fs.copyFile(tmpOutputPath, outputPath);
+		} else if (after.size >= before.size) {
+			if (!outputIsInput) {
+				await fs.copyFile(filePath, outputPath);
+			}
 			didFallback = true;
 		} else {
-			await fs.copyFile(tmpInputPath, outputPath);
+			await fs.copyFile(tmpOutputPath, outputPath);
 		}
 
 		try {
 			await fs.unlink(tmpInputPath);
+		} catch {}
+		try {
+			await fs.unlink(tmpOutputPath);
 		} catch {}
 
 		parentPort?.postMessage({
@@ -154,10 +190,14 @@ parentPort.on("message", async (task: CompressionTask) => {
 			filePath,
 			outputPath,
 			originalSize: options.originalSize ?? fileBuffer.length,
-			compressedSize: didFallback ? before.size : after.size,
+			compressedSize: shouldOverwrite
+				? after.size
+				: didFallback
+				? before.size
+				: after.size,
 			didFallback,
+			toolUsed: "cjpeg",
 		});
-
 	} catch (error) {
 		parentPort?.postMessage({
 			success: false,

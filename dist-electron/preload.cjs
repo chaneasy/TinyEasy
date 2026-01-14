@@ -10,4 +10,5 @@ electron_1.contextBridge.exposeInMainWorld('electron', {
         electron_1.ipcRenderer.removeListener(channel, callback);
     },
     invoke: (channel, ...args) => electron_1.ipcRenderer.invoke(channel, ...args),
+    getPathForFile: (file) => electron_1.webUtils.getPathForFile(file),
 });

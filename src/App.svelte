@@ -3,7 +3,7 @@
 	import Settings from "./lib/components/Settings.svelte";
 	import FileList from "./lib/components/FileList.svelte";
 	import { appState } from "./lib/state.svelte";
-	import { Button, Spinner } from "flowbite-svelte";
+	import { Button, Spinner, Modal } from "flowbite-svelte";
 	import { Toaster } from "svelte-french-toast";
 	import { PlayOutline, TrashBinOutline } from "flowbite-svelte-icons";
 	import { onMount, onDestroy } from "svelte";
@@ -94,6 +94,8 @@
 		completedOriginalBytes > 0 ? (savedBytes / completedOriginalBytes) * 100 : 0
 	);
 
+	const progressPct = $derived(appState.progressPct);
+
 	function formatBytes(bytes: number, decimals = 2) {
 		if (!+bytes) return "0 Bytes";
 		const k = 1024;
@@ -110,6 +112,29 @@
 	class="h-dvh bg-gradient-to-b from-gray-50 to-white text-gray-900 dark:from-gray-950 dark:to-gray-900 dark:text-white"
 >
 	<div class="mx-auto flex h-full max-w-6xl flex-col gap-4 p-4">
+		<Modal
+			title="Compression Options"
+			bind:open={appState.showCompressionModal}
+			size="xs"
+			autoclose={false}
+		>
+			<div class="flex flex-col gap-4 p-4">
+				<Button
+					color="red"
+					class="w-full"
+					onclick={() => appState.confirmCompression("overwrite")}
+				>
+					Overwrite Original
+				</Button>
+				<Button
+					color="blue"
+					class="w-full"
+					onclick={() => appState.confirmCompression("select-path")}
+				>
+					Select Save Path
+				</Button>
+			</div>
+		</Modal>
 		<div class="min-h-0 flex-1">
 			<div
 				class="flex h-full min-h-0 flex-col gap-4 lg:flex-row lg:justify-between"
@@ -154,15 +179,19 @@
 									<div class="text-xs text-gray-500 dark:text-gray-400">
 										Completed
 									</div>
-									<div class="mt-1 text-xl font-semibold">{completedCount}</div>
+									<div class="mt-1 text-xl font-semibold text-green-600">
+										{completedCount}
+									</div>
 								</div>
 								<div
 									class="rounded-lg border border-gray-200 bg-white p-3 dark:border-gray-700 dark:bg-gray-800"
 								>
 									<div class="text-xs text-gray-500 dark:text-gray-400">
-										Pending
+										Failed
 									</div>
-									<div class="mt-1 text-xl font-semibold">{pendingCount}</div>
+									<div class="mt-1 text-xl font-semibold text-red-600">
+										{errorCount}
+									</div>
 								</div>
 								<div
 									class="rounded-lg border border-gray-200 bg-white p-3 dark:border-gray-700 dark:bg-gray-800"
@@ -190,17 +219,29 @@
 								<!-- Note: Button style is synchronized with "Clear All", unified using outline style -->
 								<Button
 									outline
-									class="w-full !border-blue-600 !text-blue-600 hover:!bg-blue-600 hover:!text-white dark:!border-blue-500 dark:!text-blue-400 dark:hover:!bg-blue-500 dark:hover:!text-white"
+									class="relative w-full overflow-hidden !border-blue-600 !text-blue-600 hover:!bg-blue-600 hover:!text-white dark:!border-blue-500 dark:!text-blue-400 dark:hover:!bg-blue-500 dark:hover:!text-white"
 									disabled={appState.processing || appState.pendingCount === 0}
-									onclick={() => appState.startCompression()}
+									onclick={() => (appState.showCompressionModal = true)}
 								>
-									{#if appState.processing}
-										<Spinner size="4" class="me-2" />
-										Processing...
-									{:else}
-										<PlayOutline class="me-2 h-5 w-5" />
-										Start Compression
+									{#if appState.processing && appState.progressTotal > 0}
+										<!-- 全局进度融合到按钮背景色 -->
+										<div
+											class="absolute inset-0 bg-blue-600/15 dark:bg-blue-500/15"
+										></div>
+										<div
+											class="absolute inset-y-0 left-0 bg-blue-600/35 transition-[width] duration-200 dark:bg-blue-500/35"
+											style={`width:${Math.min(100, Math.max(0, progressPct))}%`}
+										></div>
 									{/if}
+									<div class="relative z-10 flex items-center justify-center">
+										{#if appState.processing}
+											<Spinner size="4" class="me-2" />
+											Processing...
+										{:else}
+											<PlayOutline class="me-2 h-5 w-5" />
+											Start
+										{/if}
+									</div>
 								</Button>
 
 								<Button
@@ -211,7 +252,7 @@
 									onclick={() => appState.clearAll()}
 								>
 									<TrashBinOutline class="me-2 h-5 w-5" />
-									Clear All
+									Clear
 								</Button>
 							</div>
 

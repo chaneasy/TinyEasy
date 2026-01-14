@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from 'electron';
+import { contextBridge, ipcRenderer, webUtils } from 'electron';
 
 contextBridge.exposeInMainWorld('electron', {
   ping: () => ipcRenderer.invoke('ping'),
@@ -9,5 +9,5 @@ contextBridge.exposeInMainWorld('electron', {
     ipcRenderer.removeListener(channel, callback);
   },
   invoke: (channel: string, ...args: any[]) => ipcRenderer.invoke(channel, ...args),
+  getPathForFile: (file: File) => webUtils.getPathForFile(file),
 });
-

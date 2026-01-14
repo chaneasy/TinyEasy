@@ -38,7 +38,55 @@
 		"flowbite-svelte": "^1.31.0",
 		"flowbite-svelte-icons": "^3.1.0",
 		"lucide-svelte": "^0.562.0",
+		"mozjpeg": "^8.0.0",
 		"oxipng-bin": "^1.0.0",
+		"p-limit": "^7.2.0",
 		"svelte-french-toast": "^1.2.0"
+	},
+	"build": {
+		"appId": "com.tinyeasy.app",
+		"productName": "TinyEasy",
+		"directories": {
+			"output": "release",
+			"buildResources": "build"
+		},
+		"files": [
+			"dist/**/*",
+			"dist-electron/**/*"
+		],
+		"extraResources": [
+			{
+				"from": "build/icon.png",
+				"to": "icon.png"
+			}
+		],
+		"mac": {
+			"icon": "build/icon.icns",
+			"target": [
+				"dmg",
+				"zip"
+			]
+		},
+		"win": {
+			"icon": "build/icon.ico",
+			"target": [
+				"nsis"
+			]
+		},
+		"linux": {
+			"icon": "build/icon.png",
+			"target": [
+				"AppImage"
+			]
+		}
+	},
+	"pnpm": {
+		"onlyBuiltDependencies": [
+			"electron",
+			"mozjpeg",
+			"oxipng-bin",
+			"esbuild",
+			"electron-winstaller"
+		]
 	}
 }

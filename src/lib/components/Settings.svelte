@@ -29,7 +29,7 @@
 
 <div class="flex flex-col gap-4">
 	<div class="space-y-2">
-		<div class="text-sm font-medium">Compression Level</div>
+		<div class="text-sm font-medium">Level</div>
 		<div class="flex flex-col gap-2">
 			<div class="flex items-center justify-between gap-3">
 				<Radio name="level" value="low" bind:group={appState.settings.level}
@@ -55,7 +55,7 @@
 							<div>
 								<div class="font-semibold">JPG</div>
 								<div>
-									jpegoptim --max {LEVEL_CONFIG.low.jpg.max} --strip-all --all-progressive
+									cjpeg -quality {LEVEL_CONFIG.low.jpg.max} -optimize -progressive
 								</div>
 							</div>
 						</div>
@@ -86,7 +86,7 @@
 							<div>
 								<div class="font-semibold">JPG</div>
 								<div>
-									jpegoptim --max {LEVEL_CONFIG.medium.jpg.max} --strip-all --all-progressive
+									cjpeg -quality {LEVEL_CONFIG.medium.jpg.max} -optimize -progressive
 								</div>
 							</div>
 						</div>
@@ -117,7 +117,7 @@
 							<div>
 								<div class="font-semibold">JPG</div>
 								<div>
-									jpegoptim --max {LEVEL_CONFIG.high.jpg.max} --strip-all --all-progressive
+									cjpeg -quality {LEVEL_CONFIG.high.jpg.max} -optimize -progressive
 								</div>
 							</div>
 						</div>
