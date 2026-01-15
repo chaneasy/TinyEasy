@@ -41,7 +41,7 @@ jobs:
       - name: Build and package
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: pnpm run dist
+        run: npm run dist
 
       - name: Upload macOS artifacts to GitHub Releases
         if: runner.os == 'macOS'

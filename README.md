@@ -54,7 +54,7 @@ If you choose “Select Save Path” and do not pick a directory (or if the app 
 #### Prerequisites
 
 - Node.js 18+ (recommended)
-- npm (or pnpm)
+- npm
 
 #### Install
 
@@ -159,7 +159,7 @@ TinyEasy 的三个档位对应的工具参数如下：
 #### 环境要求
 
 - Node.js 18+（推荐）
-- npm（或 pnpm）
+- npm
 
 #### 安装依赖
 

@@ -94,14 +94,5 @@
 				"AppImage"
 			]
 		}
-	},
-	"pnpm": {
-		"onlyBuiltDependencies": [
-			"electron",
-			"mozjpeg",
-			"oxipng-bin",
-			"esbuild",
-			"electron-winstaller"
-		]
 	}
 }
