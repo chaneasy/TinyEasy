@@ -1,7 +1,7 @@
 {
 	"name": "tinyeasy",
 	"private": true,
-	"version": "0.0.0",
+	"version": "0.0.1",
 	"description": "TinyEasy Desktop App",
 	"author": "TinyEasy",
 	"type": "module",
@@ -67,8 +67,7 @@
 		],
 		"mac": {
 			"icon": "build/icons/icon.icns",
-			"identity": null,
-			"hardenedRuntime": false,
+			"hardenedRuntime": true,
 			"gatekeeperAssess": false,
 			"artifactName": "${productName}-${version}-mac-${arch}.${ext}",
 			"target": [
