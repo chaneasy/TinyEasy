@@ -50,6 +50,7 @@
 	"build": {
 		"appId": "com.tinyeasy.app",
 		"productName": "TinyEasy",
+		"artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
 		"directories": {
 			"output": "release",
 			"buildResources": "build"
@@ -69,6 +70,7 @@
 			"identity": null,
 			"hardenedRuntime": false,
 			"gatekeeperAssess": false,
+			"artifactName": "${productName}-${version}-mac-${arch}.${ext}",
 			"target": [
 				"dmg",
 				"zip"
@@ -76,12 +78,18 @@
 		},
 		"win": {
 			"icon": "build/icons/icon.ico",
+			"artifactName": "${productName}-Setup-${version}-${arch}.${ext}",
 			"target": [
 				"nsis"
 			]
 		},
+		"nsis": {
+			"oneClick": false,
+			"allowToChangeInstallationDirectory": true
+		},
 		"linux": {
 			"icon": "build/icon.png",
+			"artifactName": "${productName}-${version}-linux-${arch}.${ext}",
 			"target": [
 				"AppImage"
 			]

@@ -4,8 +4,6 @@
 
 TinyEasy is a lightweight desktop app for batch-compressing images. It focuses on fast local compression for PNG/JPG with simple, predictable options.
 
-![TinyEasy Screenshot](./tmp_smoke_min.png)
-
 ---
 
 ## English
