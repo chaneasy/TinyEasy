@@ -38,9 +38,9 @@ importers:
       p-limit:
         specifier: ^7.2.0
         version: 7.2.0
-      svelte-french-toast:
-        specifier: ^1.2.0
-        version: 1.2.0(svelte@5.46.3)
+      svelte-5-french-toast:
+        specifier: ^2.0.6
+        version: 2.0.6(svelte@5.46.3)
     devDependencies:
       '@sveltejs/vite-plugin-svelte':
         specifier: ^6.2.1
@@ -2641,6 +2641,11 @@ packages:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
     engines: {node: '>= 0.4'}
 
+  svelte-5-french-toast@2.0.6:
+    resolution: {integrity: sha512-m3bYOHSoTk1w22OVWwnJLBdA4h1ZyQrh6v9mnh5HbRKQFlnDQw+qzykAyn6fyevdas5HQaYo5sg/gsZmAVzYDg==}
+    peerDependencies:
+      svelte: ^5.0.0
+
   svelte-check@4.3.5:
     resolution: {integrity: sha512-e4VWZETyXaKGhpkxOXP+B/d0Fp/zKViZoJmneZWe/05Y2aqSKj3YN2nLfYPJBQ87WEiY4BQCQ9hWGu9mPT1a1Q==}
     engines: {node: '>= 18.0.0'}
@@ -2648,11 +2653,6 @@ packages:
     peerDependencies:
       svelte: ^4.0.0 || ^5.0.0-next.0
       typescript: '>=5.0.0'
-
-  svelte-french-toast@1.2.0:
-    resolution: {integrity: sha512-5PW+6RFX3xQPbR44CngYAP1Sd9oCq9P2FOox4FZffzJuZI2mHOB7q5gJBVnOiLF5y3moVGZ7u2bYt7+yPAgcEQ==}
-    peerDependencies:
-      svelte: ^3.57.0 || ^4.0.0
 
   svelte-writable-derived@3.1.1:
     resolution: {integrity: sha512-w4LR6/bYZEuCs7SGr+M54oipk/UQKtiMadyOhW0PTwAtJ/Ai12QS77sLngEcfBx2q4H8ZBQucc9ktSA5sUGZWw==}
@@ -5640,6 +5640,11 @@ snapshots:
 
   supports-preserve-symlinks-flag@1.0.0: {}
 
+  svelte-5-french-toast@2.0.6(svelte@5.46.3):
+    dependencies:
+      svelte: 5.46.3
+      svelte-writable-derived: 3.1.1(svelte@5.46.3)
+
   svelte-check@4.3.5(picomatch@4.0.3)(svelte@5.46.3)(typescript@5.9.3):
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
@@ -5651,11 +5656,6 @@ snapshots:
       typescript: 5.9.3
     transitivePeerDependencies:
       - picomatch
-
-  svelte-french-toast@1.2.0(svelte@5.46.3):
-    dependencies:
-      svelte: 5.46.3
-      svelte-writable-derived: 3.1.1(svelte@5.46.3)
 
   svelte-writable-derived@3.1.1(svelte@5.46.3):
     dependencies:
