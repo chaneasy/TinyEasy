@@ -36,13 +36,30 @@ jobs:
       - name: Build and package
         run: npm run dist
 
-      - name: Upload artifacts to GitHub Releases
+      - name: Upload macOS artifacts to GitHub Releases
+        if: runner.os == 'macOS'
         uses: softprops/action-gh-release@v2
         with:
           files: |
             release/*.dmg
             release/*.zip
-            release/*.exe
-            release/*.AppImage
-            release/*.yml
             release/*.blockmap
+            release/latest-mac.yml
+
+      - name: Upload Windows artifacts to GitHub Releases
+        if: runner.os == 'Windows'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release/*.exe
+            release/*.blockmap
+            release/latest.yml
+
+      - name: Upload Linux artifacts to GitHub Releases
+        if: runner.os == 'Linux'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release/*.AppImage
+            release/*.blockmap
+            release/latest-linux.yml
