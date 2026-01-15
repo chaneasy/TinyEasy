@@ -2,6 +2,8 @@
 	"name": "tinyeasy",
 	"private": true,
 	"version": "0.0.0",
+	"description": "TinyEasy Desktop App",
+	"author": "TinyEasy",
 	"type": "module",
 	"main": "dist-electron/main.js",
 	"scripts": {
@@ -9,6 +11,8 @@
 		"dev:vite": "vite",
 		"dev:electron": "wait-on tcp:5173 && tsc -p tsconfig.electron.json && electron .",
 		"build": "tsc -p tsconfig.electron.json && vite build",
+		"pack": "npm run build && electron-builder --dir",
+		"dist": "npm run build && electron-builder",
 		"preview": "vite preview",
 		"check": "svelte-check --tsconfig ./tsconfig.app.json && tsc -p tsconfig.node.json"
 	},
@@ -61,14 +65,17 @@
 			}
 		],
 		"mac": {
-			"icon": "build/icon.icns",
+			"icon": "build/icons/icon.icns",
+			"identity": null,
+			"hardenedRuntime": false,
+			"gatekeeperAssess": false,
 			"target": [
 				"dmg",
 				"zip"
 			]
 		},
 		"win": {
-			"icon": "build/icon.ico",
+			"icon": "build/icons/icon.ico",
 			"target": [
 				"nsis"
 			]

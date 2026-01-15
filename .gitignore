@@ -12,6 +12,19 @@ dist
 dist-ssr
 *.local
 
+# Build outputs (Electron)
+dist-electron
+release
+
+# Local temp inputs/outputs
+tmp_inputs
+tmp_outputs
+
+# Common packaged artifacts
+*.dmg
+*.zip
+*.blockmap
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
