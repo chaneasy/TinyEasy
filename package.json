@@ -45,7 +45,7 @@
 		"mozjpeg": "^8.0.0",
 		"oxipng-bin": "^1.0.0",
 		"p-limit": "^7.2.0",
-		"svelte-french-toast": "^1.2.0"
+		"svelte-5-french-toast": "^2.0.6"
 	},
 	"build": {
 		"appId": "com.tinyeasy.app",

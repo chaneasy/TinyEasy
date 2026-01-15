@@ -22,7 +22,7 @@ interface SelectedFileEntry {
 	relativePath?: string;
 }
 
-import { toast } from "svelte-french-toast";
+import toast from "svelte-5-french-toast";
 
 import pLimit from "p-limit";
 

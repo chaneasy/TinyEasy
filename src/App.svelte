@@ -4,10 +4,9 @@
 	import FileList from "./lib/components/FileList.svelte";
 	import { appState } from "./lib/state.svelte";
 	import { Button, Spinner, Modal } from "flowbite-svelte";
-	import { Toaster } from "svelte-french-toast";
+	import toast, { Toaster } from "svelte-5-french-toast";
 	import { PlayOutline, TrashBinOutline } from "flowbite-svelte-icons";
 	import { onMount, onDestroy } from "svelte";
-	import toast from "svelte-french-toast";
 
 	let cleanupSystemThemeListener: (() => void) | undefined;
 	let cleanupWindowResizeListener: (() => void) | undefined;
