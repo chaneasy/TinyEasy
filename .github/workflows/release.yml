@@ -39,6 +39,8 @@ jobs:
           sudo apt-get install -y libfuse2
 
       - name: Build and package
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: pnpm run dist
 
       - name: Upload macOS artifacts to GitHub Releases
