@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="176" height="40" viewBox="0 0 176 40" fill="none" role="img" aria-labelledby="title description">
+  <title id="title">TinyEasy</title>
+  <desc id="description">A compact, rounded TinyEasy wordmark drawn entirely with vector paths.</desc>
+  <g stroke="#243744" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path id="letter-T" d="M3 5H21M12 5V28"/>
+    <path id="letter-i" d="M28 13V28"/>
+    <path id="letter-n" d="M37 28V13M37 19C37 10 52 10 52 19V28"/>
+    <path id="letter-y-first" d="M60 13L67 28M74 13L66 33Q64 38 59 36"/>
+    <path id="letter-E" d="M86 5H104M86 5V28H104M86 16H101"/>
+    <path id="letter-a" d="M127 16C123 10 112 12 112 20C112 29 123 31 127 23M127 13V28"/>
+    <path id="letter-s" d="M149 14C145 11 136 12 136 17C136 22 149 19 149 24C149 30 140 30 136 27"/>
+    <path id="letter-y-last" d="M157 13L164 28M171 13L163 33Q161 38 156 36"/>
+  </g>
+  <circle id="letter-i-dot" cx="28" cy="5.5" r="2.3" fill="#243744"/>
+</svg>

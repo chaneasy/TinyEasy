@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" role="img" aria-labelledby="title">
+  <title id="title">Empty</title>
+  <path d="M20 16H44L54 36V48A4 4 0 0 1 50 52H14A4 4 0 0 1 10 48V36L20 16Z"/>
+  <path d="M10 36H23L28 43H36L41 36H54M25 25H39"/>
+</svg>
