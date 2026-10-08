@@ -20,13 +20,13 @@ TinyEasy 将 Tinify 图片压缩服务整合进一个紧凑的桌面工作区：
 
 ## 下载
 
-从 [GitHub Releases](https://github.com/chaneasy/TinyEasy/releases/latest) 下载当前版本。
+下载 **[TinyEasy v2.0.0](https://github.com/chaneasy/TinyEasy/releases/tag/v2.0.0)**。以下安装包已通过 [macOS、Windows 和 Linux 构建及测试工作流](https://github.com/chaneasy/TinyEasy/actions/runs/37758062258)。
 
 | 平台 | 下载 |
 | --- | --- |
-| Windows x64 | [便携 EXE](https://github.com/chaneasy/TinyEasy/releases/latest/download/TinyEasy-2.0.0-windows-x86_64.exe) · [ZIP](https://github.com/chaneasy/TinyEasy/releases/latest/download/TinyEasy-2.0.0-windows-x86_64.zip) |
-| macOS Apple Silicon | [DMG](https://github.com/chaneasy/TinyEasy/releases/latest/download/TinyEasy-2.0.0-darwin-aarch64.dmg) |
-| Linux x64 | [tar.gz](https://github.com/chaneasy/TinyEasy/releases/latest/download/TinyEasy-2.0.0-linux-x86_64.tar.gz) |
+| Windows x64 | [便携 EXE](https://github.com/chaneasy/TinyEasy/releases/download/v2.0.0/TinyEasy-2.0.0-windows-x86_64.exe) · [ZIP](https://github.com/chaneasy/TinyEasy/releases/download/v2.0.0/TinyEasy-2.0.0-windows-x86_64.zip) |
+| macOS Apple Silicon | [DMG](https://github.com/chaneasy/TinyEasy/releases/download/v2.0.0/TinyEasy-2.0.0-darwin-aarch64.dmg) |
+| Linux x64 | [tar.gz](https://github.com/chaneasy/TinyEasy/releases/download/v2.0.0/TinyEasy-2.0.0-linux-x86_64.tar.gz) |
 
 Windows 可直接运行 EXE，或解压 ZIP 后运行 `tinyeasy.exe`。macOS 打开 DMG，将 TinyEasy 拖入 Applications。macOS 包使用 ad-hoc 签名，尚未公证。
 
@@ -141,9 +141,9 @@ python3 scripts/package.py
 
 | 平台 | `release/rust/` 下的产物 | 已记录的验证情况 |
 | --- | --- | --- |
-| macOS | `TinyEasy.app` 和 `.dmg` | arm64 构建及本地打包已验证；x86_64 未构建 |
-| Windows | 便携 `.exe` 和 `.zip` | 已配置原生构建、测试、打包工作流；尚无实际执行结果记录 |
-| Linux | `.tar.gz` | 已配置原生构建、测试、打包工作流；尚无实际执行结果记录 |
+| macOS | `TinyEasy.app` 和 `.dmg` | arm64 构建、测试及 Release 上传已通过；x86_64 未构建 |
+| Windows | 便携 `.exe` 和 `.zip` | x64 构建、测试及 Release 上传已通过 |
+| Linux | `.tar.gz` | x64 构建、测试及 Release 上传已通过 |
 
 每个安装包同时生成 JSON 清单，包含包体与二进制的精确字节数，以及 SHA-256 校验值。包体大小应从本次准备发布的实际构建产物测量。
 

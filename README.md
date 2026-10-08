@@ -20,13 +20,13 @@ TinyEasy brings Tinify image compression into a small desktop workspace: import 
 
 ## Download
 
-Download the current release from [GitHub Releases](https://github.com/chaneasy/TinyEasy/releases/latest).
+Download **[TinyEasy v2.0.0](https://github.com/chaneasy/TinyEasy/releases/tag/v2.0.0)**. These packages passed the [macOS, Windows, and Linux build and test workflow](https://github.com/chaneasy/TinyEasy/actions/runs/37758062258).
 
 | Platform | Download |
 | --- | --- |
-| Windows x64 | [Portable EXE](https://github.com/chaneasy/TinyEasy/releases/latest/download/TinyEasy-2.0.0-windows-x86_64.exe) · [ZIP](https://github.com/chaneasy/TinyEasy/releases/latest/download/TinyEasy-2.0.0-windows-x86_64.zip) |
-| macOS Apple Silicon | [DMG](https://github.com/chaneasy/TinyEasy/releases/latest/download/TinyEasy-2.0.0-darwin-aarch64.dmg) |
-| Linux x64 | [tar.gz](https://github.com/chaneasy/TinyEasy/releases/latest/download/TinyEasy-2.0.0-linux-x86_64.tar.gz) |
+| Windows x64 | [Portable EXE](https://github.com/chaneasy/TinyEasy/releases/download/v2.0.0/TinyEasy-2.0.0-windows-x86_64.exe) · [ZIP](https://github.com/chaneasy/TinyEasy/releases/download/v2.0.0/TinyEasy-2.0.0-windows-x86_64.zip) |
+| macOS Apple Silicon | [DMG](https://github.com/chaneasy/TinyEasy/releases/download/v2.0.0/TinyEasy-2.0.0-darwin-aarch64.dmg) |
+| Linux x64 | [tar.gz](https://github.com/chaneasy/TinyEasy/releases/download/v2.0.0/TinyEasy-2.0.0-linux-x86_64.tar.gz) |
 
 Windows: run the EXE directly, or extract the ZIP and run `tinyeasy.exe`. macOS: open the DMG and drag TinyEasy to Applications. The macOS package uses ad-hoc signing and is not notarized.
 
@@ -141,9 +141,9 @@ python3 scripts/package.py
 
 | Platform | Output in `release/rust/` | Recorded validation |
 | --- | --- | --- |
-| macOS | `TinyEasy.app` and `.dmg` | arm64 build and local packaging verified; x86_64 not built |
-| Windows | Portable `.exe` and `.zip` | Native build/test/package workflow configured; no executed Windows results recorded |
-| Linux | `.tar.gz` | Native build/test/package workflow configured; no executed Linux results recorded |
+| macOS | `TinyEasy.app` and `.dmg` | arm64 build, tests, and Release upload passed; x86_64 not built |
+| Windows | Portable `.exe` and `.zip` | x64 build, tests, and Release upload passed |
+| Linux | `.tar.gz` | x64 build, tests, and Release upload passed |
 
 Each package has a JSON manifest containing exact artifact/binary byte counts and a SHA-256 checksum. Measure package sizes from the artifacts produced by the build you intend to distribute.
 
