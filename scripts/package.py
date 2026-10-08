@@ -59,6 +59,7 @@ def main():
             artifact = output / (stem + ".dmg")
             subprocess.run(["hdiutil", "create", "-ov", "-format", "UDZO", "-volname", "TinyEasy", "-srcfolder", str(stage), str(artifact)], check=True)
         elif system == "Windows":
+            shutil.copy2(executable, output / (stem + ".exe"))
             artifact = output / (stem + ".zip")
             with zipfile.ZipFile(artifact, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
                 archive.write(executable, "TinyEasy/tinyeasy.exe")

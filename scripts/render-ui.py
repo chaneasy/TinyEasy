@@ -29,12 +29,14 @@ SCENES = {
     'dark-zh-filter-empty': ('dark', 'zh-CN', 'filter-empty', True),
     'light-en-states-small': ('light', 'en', 'states', True),
     'light-en-done': ('light', 'en', 'done', True),
+    'dark-en-done': ('dark', 'en', 'done', True),
     'dark-zh-done': ('dark', 'zh-CN', 'done', True),
     'light-en-directory-small': ('light', 'en', 'directory', True),
     'dark-zh-directory-small': ('dark', 'zh-CN', 'directory', True),
     'light-en-keys': ('light', 'en', 'keys', True),
     'dark-zh-keys-many': ('dark', 'zh-CN', 'keys-many', True),
     'light-en-settings': ('light', 'en', 'settings', True),
+    'dark-en-settings': ('dark', 'en', 'settings', True),
     'dark-zh-settings': ('dark', 'zh-CN', 'settings', True),
     'system-en-settings': ('system', 'en', 'settings', True),
     'system-zh-settings': ('system', 'zh-CN', 'settings', True),
@@ -44,6 +46,13 @@ SCENES = {
     'dark-zh-keys-usage-error': ('dark', 'zh-CN', 'keys-usage-error', True),
     'light-en-toast-many': ('light', 'en', 'toast-many', True),
     'light-en-preview': ('light', 'en', 'preview', False),
+}
+DOC_SCENES = {
+    'light-en-gallery': 'gallery-light-en.png',
+    'dark-en-done': 'completed-dark-en.png',
+    'light-en-settings': 'settings-light-en.png',
+    'dark-en-settings': 'settings-dark-en.png',
+    'light-en-preview': 'preview-light-en.png',
 }
 
 def png(path, index):
@@ -72,25 +81,30 @@ def main():
     parser.add_argument('--skip-build', action='store_true')
     parser.add_argument('--capture-ms', type=int, default=800)
     parser.add_argument('--scene', action='append', choices=SCENES)
-    parser.add_argument('--output', type=Path, default=ROOT / 'docs' / 'ui-screenshots')
+    parser.add_argument('--docs', action='store_true', help='Render all public README screenshots with English UI and sample filenames')
+    parser.add_argument('--output', type=Path)
     args = parser.parse_args()
+    if args.docs and args.scene:
+        parser.error('--docs selects the public scenes; do not combine it with --scene')
     if not args.skip_build:
         cargo = shutil.which('cargo') or str(Path.home()/'.cargo/bin'/('cargo.exe' if platform.system() == 'Windows' else 'cargo'))
         subprocess.run([cargo,'build','--locked'],cwd=ROOT,check=True)
     binary = ROOT/'target/debug'/('tinyeasy.exe' if platform.system()=='Windows' else 'tinyeasy')
-    output=args.output.resolve();output.mkdir(parents=True,exist_ok=True)
+    output=(args.output or ROOT / 'docs' / ('images' if args.docs else 'ui-screenshots')).resolve();output.mkdir(parents=True,exist_ok=True)
     with tempfile.TemporaryDirectory(prefix='tinyeasy-render-ui-') as temporary:
         directory=Path(temporary);config=directory/'config';config.mkdir()
         images=directory/'images';images.mkdir();(directory/'Output 中文 images').mkdir()
         names=['Mountain morning.png','Desert light.png','Blue hour.png','中文 山谷.png','Long English filename for layout verification.png','Coastal evening.png']
+        if args.docs:
+            names=['Mountain morning.png','Desert light.png','Blue hour.png','Green valley.png','Forest afternoon.png','Coastal evening.png']
         for index,name in enumerate(names):png(images/name,index)
-        for name in args.scene or SCENES:
+        for name in DOC_SCENES if args.docs else args.scene or SCENES:
             theme,language,scene,small=SCENES[name]
             (config/'settings.json').write_text(json.dumps({'version':1,'theme':theme,'language':language}))
             env=os.environ.copy()
             for key in list(env):
                 if key.startswith('TINYEASY_QA_') or key in ('TINIFY_API_KEY','TINIFY_API_KEYS'):env.pop(key)
-            screenshot=output/(name+'.png')
+            screenshot=output/(DOC_SCENES[name] if args.docs else name+'.png')
             env.update(TINYEASY_QA_DIR=str(config),TINYEASY_QA_SCENE=scene,TINYEASY_QA_SCREENSHOT=str(screenshot),TINYEASY_QA_EXIT='1',TINYEASY_QA_CAPTURE_MS=str(args.capture_ms))
             if small:env['TINYEASY_QA_SMALL']='1'
             if scene in ('gallery','states','preview','directory','filter-empty','done'):env['TINYEASY_QA_IMPORT']=str(images)

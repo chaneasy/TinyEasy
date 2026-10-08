@@ -16,7 +16,19 @@ TinyEasy brings Tinify image compression into a small desktop workspace: import 
 
 *Light theme, English UI: image cards and status filters on the left, output options and available quota on the right. All screenshots use generated images and simulated task/quota data; the displayed savings are illustrative.*
 
-[Features](#features) · [Quick start](#quick-start) · [Screenshots](#screenshots) · [Shortcuts](#shortcuts) · [Build and package](#build-and-package) · [Configuration](#configuration-and-data) · [Contributing](#contributing)
+[Download](#download) · [Features](#features) · [Quick start](#quick-start) · [Screenshots](#screenshots) · [Shortcuts](#shortcuts) · [Build and package](#build-and-package) · [Configuration](#configuration-and-data) · [Contributing](#contributing)
+
+## Download
+
+Download the current release from [GitHub Releases](https://github.com/chaneasy/TinyEasy/releases/latest).
+
+| Platform | Download |
+| --- | --- |
+| Windows x64 | [Portable EXE](https://github.com/chaneasy/TinyEasy/releases/latest/download/TinyEasy-2.0.0-windows-x86_64.exe) · [ZIP](https://github.com/chaneasy/TinyEasy/releases/latest/download/TinyEasy-2.0.0-windows-x86_64.zip) |
+| macOS Apple Silicon | [DMG](https://github.com/chaneasy/TinyEasy/releases/latest/download/TinyEasy-2.0.0-darwin-aarch64.dmg) |
+| Linux x64 | [tar.gz](https://github.com/chaneasy/TinyEasy/releases/latest/download/TinyEasy-2.0.0-linux-x86_64.tar.gz) |
+
+Windows: run the EXE directly, or extract the ZIP and run `tinyeasy.exe`. macOS: open the DMG and drag TinyEasy to Applications. The macOS package uses ad-hoc signing and is not notarized.
 
 ## Features
 
@@ -33,7 +45,7 @@ TinyEasy brings Tinify image compression into a small desktop workspace: import 
 
 ## Quick start
 
-1. Build and run using the [instructions below](#build-and-package), or launch a package built for your platform.
+1. Download and launch the [package for your platform](#download), or build using the [instructions below](#build-and-package).
 2. Get an API Key from the [Tinify developer page](https://tinify.com/developers). On first launch without a Key, TinyEasy opens **Settings → API Keys**. Add your Key and save; validation runs after saving.
 3. Click **Import**, then choose **Images** or **Folder**. You can also drag files/folders into the window. To add more files once the gallery is populated, use drag-and-drop or `Cmd/Ctrl+O`.
 4. Choose **Overwrite originals** or **Save a copy** in the Output panel. For copies, choose an output folder and optionally enable **Keep folder structure**.
@@ -45,9 +57,9 @@ The current quota model uses a limit of **500 compressions per Key**. Paid-accou
 
 ## Screenshots
 
-### Dark theme and Chinese UI
+### Dark theme and English UI
 
-![Dark Chinese UI showing completed images and batch statistics](docs/images/completed-dark-zh.png)
+![Dark English UI showing completed images and batch statistics](docs/images/completed-dark-en.png)
 
 *Completed image cards show individual results; the Output panel summarizes progress and space saved. This is a simulated completion scene.*
 
@@ -130,12 +142,12 @@ python3 scripts/package.py
 | Platform | Output in `release/rust/` | Recorded validation |
 | --- | --- | --- |
 | macOS | `TinyEasy.app` and `.dmg` | arm64 build and local packaging verified; x86_64 not built |
-| Windows | Portable `.zip` | Native build/test/package workflow configured; no executed Windows results recorded |
+| Windows | Portable `.exe` and `.zip` | Native build/test/package workflow configured; no executed Windows results recorded |
 | Linux | `.tar.gz` | Native build/test/package workflow configured; no executed Linux results recorded |
 
 Each package has a JSON manifest containing exact artifact/binary byte counts and a SHA-256 checksum. Measure package sizes from the artifacts produced by the build you intend to distribute.
 
-macOS packaging currently uses **ad-hoc signing**, without Developer ID signing or notarization. The [GitHub Actions workflow](.github/workflows/rust.yml) runs checks and packages on macOS, Windows, and Ubuntu, then uploads workflow artifacts; it does not automatically publish GitHub Releases.
+macOS packaging currently uses **ad-hoc signing**, without Developer ID signing or notarization. The [GitHub Actions workflow](.github/workflows/rust.yml) runs checks and packages on macOS, Windows, and Ubuntu, then uploads workflow artifacts. Pushing a version tag such as `v2.0.0` also publishes the EXE, ZIP, DMG, Linux archive, and checksum manifests to GitHub Releases after all platform checks pass.
 
 **Platform limitations:** iced 0.14 does not provide native file-drop events on Wayland. Use Import for the initial batch and `Ctrl+O` to add images afterward. X11/native drag-and-drop still needs platform verification. Native screen-reader accessibility also requires further work and validation.
 
@@ -165,10 +177,10 @@ With a desktop display available, render generated scenes without loading user c
 
 ```bash
 python3 scripts/render-ui.py
-python3 scripts/render-ui.py --scene dark-zh-gallery-small
+python3 scripts/render-ui.py --docs
 ```
 
-Generated QA screenshots go to `docs/ui-screenshots/`, which is ignored by Git and excluded from packages. Public README images live in `docs/images/`. Debug builds support `TINYEASY_QA_DIR` for an isolated preference directory, `TINYEASY_QA_SCENE` (for example `settings`, `keys-many`, `preview`), `TINYEASY_QA_IMPORT` for generated/copied images, and `TINYEASY_QA_SMALL=1` for a small window. The QA entry points are removed from release builds. Use temporary directories and image copies when testing.
+Generated QA screenshots go to `docs/ui-screenshots/`, which is ignored by Git and excluded from packages. Public README images live in `docs/images/`; regenerate them with `--docs` to keep the UI and sample filenames in English in both README languages. Debug builds support `TINYEASY_QA_DIR` for an isolated preference directory, `TINYEASY_QA_SCENE` (for example `settings`, `keys-many`, `preview`), `TINYEASY_QA_IMPORT` for generated/copied images, and `TINYEASY_QA_SMALL=1` for a small window. The QA entry points are removed from release builds. Use temporary directories and image copies when testing.
 
 ## Contributing
 

@@ -12,11 +12,23 @@ TinyEasy 将 Tinify 图片压缩服务整合进一个紧凑的桌面工作区：
 
 **压缩需要联网，并使用你自己的 [Tinify API Key](https://tinify.com/developers)。图片会上传至 Tinify 服务进行处理。**
 
-![TinyEasy 深色中文主界面：图片完成状态与批量压缩统计](docs/images/completed-dark-zh.png)
+![TinyEasy 深色英文主界面：图片完成状态与批量压缩统计](docs/images/completed-dark-en.png)
 
-*深色主题、中文界面：左侧查看图片和状态，右侧选择输出方式、查看进度及节省空间。本文截图使用生成图片和模拟任务、额度数据，压缩结果仅用于界面演示。*
+*深色主题、英文界面：左侧查看图片和状态，右侧选择输出方式、查看进度及节省空间。本文截图使用生成图片和模拟任务、额度数据，压缩结果仅用于界面演示。*
 
-[功能亮点](#功能亮点) · [快速上手](#快速上手) · [界面展示](#界面展示) · [快捷键](#快捷键) · [构建与打包](#构建与打包) · [配置与数据](#配置与数据) · [参与贡献](#参与贡献)
+[下载](#下载) · [功能亮点](#功能亮点) · [快速上手](#快速上手) · [界面展示](#界面展示) · [快捷键](#快捷键) · [构建与打包](#构建与打包) · [配置与数据](#配置与数据) · [参与贡献](#参与贡献)
+
+## 下载
+
+从 [GitHub Releases](https://github.com/chaneasy/TinyEasy/releases/latest) 下载当前版本。
+
+| 平台 | 下载 |
+| --- | --- |
+| Windows x64 | [便携 EXE](https://github.com/chaneasy/TinyEasy/releases/latest/download/TinyEasy-2.0.0-windows-x86_64.exe) · [ZIP](https://github.com/chaneasy/TinyEasy/releases/latest/download/TinyEasy-2.0.0-windows-x86_64.zip) |
+| macOS Apple Silicon | [DMG](https://github.com/chaneasy/TinyEasy/releases/latest/download/TinyEasy-2.0.0-darwin-aarch64.dmg) |
+| Linux x64 | [tar.gz](https://github.com/chaneasy/TinyEasy/releases/latest/download/TinyEasy-2.0.0-linux-x86_64.tar.gz) |
+
+Windows 可直接运行 EXE，或解压 ZIP 后运行 `tinyeasy.exe`。macOS 打开 DMG，将 TinyEasy 拖入 Applications。macOS 包使用 ad-hoc 签名，尚未公证。
 
 ## 功能亮点
 
@@ -33,7 +45,7 @@ TinyEasy 将 Tinify 图片压缩服务整合进一个紧凑的桌面工作区：
 
 ## 快速上手
 
-1. 按[下方说明](#构建与打包)从源码构建运行，或启动为当前平台构建的应用包。
+1. 下载并启动[对应平台的应用包](#下载)，也可以按[下方说明](#构建与打包)从源码构建运行。
 2. 前往 [Tinify 开发者页面](https://tinify.com/developers)获取 API Key。首次启动无 Key 时，应用自动打开 **Settings → API Keys**；添加 Key 并保存，保存后自动校验。
 3. 点击 **Import / 导入**，选择 **Images / 图片** 或 **Folder / 文件夹**，也可将文件或文件夹拖入窗口。列表已有图片后，可通过拖放或 `Cmd/Ctrl+O` 继续添加图片。
 4. 在右侧输出栏选择 **覆盖原图** 或 **另存到文件夹**；另存时选择输出目录，可勾选 **保留文件夹结构**。
@@ -53,7 +65,7 @@ TinyEasy 将 Tinify 图片压缩服务整合进一个紧凑的桌面工作区：
 
 ### 主题与语言设置
 
-![中文设置弹窗：语言选择及浅色、深色、跟随系统主题](docs/images/settings-dark-zh.png)
+![英文设置弹窗：语言选择及浅色、深色、跟随系统主题](docs/images/settings-dark-en.png)
 
 *设置分为常规和 API Key 两个页签。主题和语言切换立即生效，无需重启，不会清空队列。*
 
@@ -130,12 +142,12 @@ python3 scripts/package.py
 | 平台 | `release/rust/` 下的产物 | 已记录的验证情况 |
 | --- | --- | --- |
 | macOS | `TinyEasy.app` 和 `.dmg` | arm64 构建及本地打包已验证；x86_64 未构建 |
-| Windows | 便携 `.zip` | 已配置原生构建、测试、打包工作流；尚无实际执行结果记录 |
+| Windows | 便携 `.exe` 和 `.zip` | 已配置原生构建、测试、打包工作流；尚无实际执行结果记录 |
 | Linux | `.tar.gz` | 已配置原生构建、测试、打包工作流；尚无实际执行结果记录 |
 
 每个安装包同时生成 JSON 清单，包含包体与二进制的精确字节数，以及 SHA-256 校验值。包体大小应从本次准备发布的实际构建产物测量。
 
-macOS 当前仅使用 **ad-hoc 签名**，未使用 Developer ID 签名或公证。[GitHub Actions 工作流](.github/workflows/rust.yml)在 macOS、Windows、Ubuntu 上运行检查、打包并上传工作流产物，不会自动发布 GitHub Releases。
+macOS 当前仅使用 **ad-hoc 签名**，未使用 Developer ID 签名或公证。[GitHub Actions 工作流](.github/workflows/rust.yml)在 macOS、Windows、Ubuntu 上运行检查、打包并上传工作流产物。推送 `v2.0.0` 等版本标签后，全部平台检查通过时自动发布 EXE、ZIP、DMG、Linux 压缩包及校验清单到 GitHub Releases。
 
 **平台限制：** iced 0.14 在 Wayland 下尚不提供原生文件拖放事件。首次导入使用导入按钮，列表已有图片后使用 `Ctrl+O` 继续添加。X11 等平台的原生拖放仍需验证，原生读屏可访问性也需要进一步完善与验收。
 
@@ -165,10 +177,10 @@ Key 与备注使用 **ChaCha20-Poly1305** 本地加密保存，随机生成的�
 
 ```bash
 python3 scripts/render-ui.py
-python3 scripts/render-ui.py --scene dark-zh-gallery-small
+python3 scripts/render-ui.py --docs
 ```
 
-生成的 QA 截图保存至 `docs/ui-screenshots/`，由 Git 忽略，也不包含在发行包中。README 展示图片位于 `docs/images/`。调试构建支持 `TINYEASY_QA_DIR` 指定隔离偏好目录，`TINYEASY_QA_SCENE` 选择场景（如 `settings`、`keys-many`、`preview`），`TINYEASY_QA_IMPORT` 指定生成图片或图片副本目录，`TINYEASY_QA_SMALL=1` 使用小窗口。release 构建移除 QA 入口；测试请使用临时目录和图片副本。
+生成的 QA 截图保存至 `docs/ui-screenshots/`，由 Git 忽略，也不包含在发行包中。README 展示图片位于 `docs/images/`；使用 `--docs` 重新生成，中英文文档均使用英文界面及英文示例文件名。调试构建支持 `TINYEASY_QA_DIR` 指定隔离偏好目录，`TINYEASY_QA_SCENE` 选择场景（如 `settings`、`keys-many`、`preview`），`TINYEASY_QA_IMPORT` 指定生成图片或图片副本目录，`TINYEASY_QA_SMALL=1` 使用小窗口。release 构建移除 QA 入口；测试请使用临时目录和图片副本。
 
 ## 参与贡献
 
